@@ -25,7 +25,7 @@ public class SimpleEntityRecovery {
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> List<T> find(Class<T> clazz, Specification specification, String ...agregation) {
-		AliasToBeanNestedResultTransformer transformer = new AliasToBeanNestedResultTransformer(clazz);
+		AliasToBeanMultiLevelNestedResultTransformer transformer = new AliasToBeanMultiLevelNestedResultTransformer(clazz);
 		specification.setProjection(buildProjection(clazz, specification));
 		StringBuilder sql = buildQuery(clazz, specification, agregation);
 		List<T> result = new ArrayList<T>();
