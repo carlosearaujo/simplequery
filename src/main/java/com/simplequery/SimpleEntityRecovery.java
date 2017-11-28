@@ -61,7 +61,11 @@ public class SimpleEntityRecovery {
 
 	private List<String> buildFieldFullProjection(Class<?> clazz, Specification specification, String fieldName) {
 		try {
-			Class<?> fieldClass = clazz.getDeclaredField(fieldName).getType();
+			String[] hierarchyDotSplit = fieldName.split("\\.");
+			Class<?> fieldClass = clazz;
+			for(String classHierarchy : hierarchyDotSplit){
+				fieldClass = fieldClass.getDeclaredField(classHierarchy).getType();
+			}
 			return projectionUtils.buildEntityProjection(fieldClass, fieldName);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
