@@ -102,10 +102,7 @@ public class SimpleEntityRecovery {
 	}
 
 	private void applySelection(List<Selection> selections, StringBuilder sql) {
-		if(selections.isEmpty()){
-			throw new IllegalArgumentException("Empty selection is not allowed");
-		}
-		else{
+		if(!selections.isEmpty()){
 			sql.append(" WHERE ");
 			int i = 1;
 			for(Selection selection : selections){
