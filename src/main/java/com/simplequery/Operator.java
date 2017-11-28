@@ -4,7 +4,9 @@ package com.simplequery;
    @since  19 de out de 2017*/
 public enum Operator {
 	
-	EQUALS(" = "), LIKE(" LIKE "), IN(" IN "), NEQUALS(" != "), NOTIN(" NOT IN "), BIGTHAN(" > "), BIGEQTHAN(" >= ");
+	EQUALS(" = "), LIKE(" LIKE "), IN(" IN "), NEQUALS(" != "), NOTIN(" NOT IN "), BIGTHAN(" > "), 
+	
+	BIGEQTHAN(" >= "), LESSTHAN(" < "), LESSEQTHAN(" <= ");
 	
 	static final Operator DEFAULT_OPERATOR_TYPE = Operator.EQUALS;
 	
