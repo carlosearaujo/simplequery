@@ -14,6 +14,11 @@ import lombok.Setter;
 @Setter @NoArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true)
 public class Specification {
 	
+	private List<Selection> selection;
+	private String[] projection;
+	private List<Join> joins;
+	private List<Agregation> agregation;
+	
 	public Specification(List<Selection> selections, String ...projection){
 		this.selection = selections;
 		this.projection = projection;
@@ -25,10 +30,6 @@ public class Specification {
 		this.selection = selections;
 		this.projection = projection;
 	}
-	
-	private List<Selection> selection;
-	private String[] projection;
-	private List<Join> joins;
 	
 	public String[] getProjection(){
 		if(projection == null){
@@ -42,6 +43,13 @@ public class Specification {
 			joins = new ArrayList<>();
 		}
 		return joins;
+	}
+	
+	public List<Agregation> getAgregations(){
+		if(agregation == null){
+			agregation = new ArrayList<>();
+		}
+		return agregation;
 	}
 	
 	public List<Selection> getSelection(){

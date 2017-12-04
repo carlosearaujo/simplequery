@@ -24,10 +24,10 @@ public class SimpleEntityRecovery {
 	ProjectionUtils projectionUtils = new ProjectionUtils();
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public <T> List<T> find(Class<T> clazz, Specification specification, String ...agregation) {
+	public <T> List<T> find(Class<T> clazz, Specification specification) {
 		AliasToBeanMultiLevelNestedResultTransformer transformer = new AliasToBeanMultiLevelNestedResultTransformer(clazz);
 		specification.setProjection(buildProjection(clazz, specification));
-		StringBuilder sql = buildQuery(clazz, specification, agregation);
+		StringBuilder sql = buildQuery(clazz, specification);
 		List<T> result = new ArrayList<T>();
 		TypedQuery<List> query = entityManager.createQuery(sql.toString(), List.class);
 		query.getResultList().forEach(resultItem -> {
@@ -80,14 +80,14 @@ public class SimpleEntityRecovery {
 		return null;
 	}
 
-	private <T> StringBuilder buildQuery(Class<T> clazz, Specification spec, String ...agregations) {
+	private <T> StringBuilder buildQuery(Class<T> clazz, Specification spec) {
 		StringBuilder sql = new StringBuilder();
 		applyProjection(clazz, sql, spec.getProjection());
 		sql.append(" FROM ");
 		sql.append(clazz.getSimpleName()).append(" AS ").append(ROOT);
 		applyJoin(spec.getJoins(), sql);
 		applySelection(spec.getSelection(), sql);
-		applyAgregation(agregations, sql);
+		applyAgregation(spec.getAgregations(), sql);
 		return sql;
 	}
 
@@ -97,12 +97,10 @@ public class SimpleEntityRecovery {
 		});
 	}
 
-	private void applyAgregation(String[] agregations, StringBuilder sql) {
-		if(agregations != null && agregations.length > 0){
-			Arrays.asList(agregations).forEach(agregation -> {
-				sql.append(" " + agregation + " ");
-			});
-		}
+	private void applyAgregation(List<Agregation> agregations, StringBuilder sql) {
+		agregations.forEach(agregation -> {
+			sql.append(" " + agregation.getType().getValue() + " " + agregation.getValue());
+		});
 	}
 
 	private void applySelection(List<Selection> selections, StringBuilder sql) {

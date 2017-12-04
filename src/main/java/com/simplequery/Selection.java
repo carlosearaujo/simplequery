@@ -1,6 +1,7 @@
 package com.simplequery;
 
 import java.util.Arrays;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,32 +37,35 @@ public class Selection {
 	public String getSelectionStr() {
 		StringBuilder builder = new StringBuilder(nestedSelectionStart != null && nestedSelectionStart ? "(" : "");
 		builder.append(getField());
-		if(getValue().getClass().isArray()){
-			Object[] array = (Object[]) getValue();
-			if(array.length > 1){
-				builder.append(Operator.IN.getValue());
-				builder.append(" ( ");
-				Arrays.asList(array).forEach(value -> {
-					builder.append(convertStrType(value) + ", ");
-				});
-				builder.replace(builder.length() - 2, builder.length(), " )");
-			}
-			else{
-				builder.append(operator.getValue() + convertStrType(array[0]));
-			}
-		}
-		else{
-			builder.append(operator.getValue() + convertStrType(value));
-		}
+		builder.append(getOperator().getValue() + getOperator().getPrefix() + getValueStr() + getOperator().getSufix());
 		builder.append(nestedSelectionEnd != null && nestedSelectionEnd ? ")" : "");
 		return builder.toString();
 	}
 
-	private Object convertStrType(Object value) {
+	static String convertStrType(Object value) {
 		if(value instanceof String){
 			return "'" + value + "'";
 		}
-		return value;
+		return value.toString();
+	}
+	
+	private Operator getOperator(){
+		if(getValue().getClass().isArray() && Operator.EQUALS.equals(operator)){
+			return Operator.IN;
+		}
+		return operator;
+	}
+	
+	private String getValueStr(){
+		StringBuilder builder = new StringBuilder();
+		if(getValue().getClass().isArray()){
+			Arrays.asList(value).forEach(arrayValues -> {
+				builder.append(convertStrType(arrayValues)).append(", ");
+			});
+			builder.replace(builder.length() - 2, builder.length(), "");
+			return builder.toString();
+		}
+		return convertStrType(value);
 	}
 	
 }
