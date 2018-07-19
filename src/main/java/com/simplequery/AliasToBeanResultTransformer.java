@@ -1,7 +1,5 @@
 package com.simplequery;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
 import org.hibernate.HibernateException;
 import org.hibernate.property.access.internal.PropertyAccessStrategyBasicImpl;
 import org.hibernate.property.access.internal.PropertyAccessStrategyChainedImpl;
@@ -9,6 +7,9 @@ import org.hibernate.property.access.internal.PropertyAccessStrategyFieldImpl;
 import org.hibernate.property.access.internal.PropertyAccessStrategyMapImpl;
 import org.hibernate.property.access.spi.Setter;
 import org.hibernate.transform.AliasedTupleSubsetResultTransformer;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
 
 /**
  * @author marcelo.mourao

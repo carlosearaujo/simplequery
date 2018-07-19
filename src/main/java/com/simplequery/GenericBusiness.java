@@ -1,9 +1,9 @@
 package com.simplequery;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**@author carlos.araujo
    @since  17 de nov de 2017*/

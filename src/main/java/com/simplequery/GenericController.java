@@ -1,11 +1,11 @@
 package com.simplequery;
 
-import java.util.List;
-
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.List;
 
 /**@author carlos.araujo
    @since  26 de set de 2017*/

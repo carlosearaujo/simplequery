@@ -1,19 +1,18 @@
 package com.simplequery;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 public class ProjectionUtils {
+
+	public List<String>  buildEntityProjection(Class<?> clazz) {
+		return buildEntityProjection(clazz, null);
+	}
 
 	public List<String>  buildEntityProjection(Class<?> clazz, String prefix) {
 		if(prefix == null){
