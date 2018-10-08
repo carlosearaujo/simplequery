@@ -1,13 +1,23 @@
 package com.simplequery;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.JoinType;
+
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author carlos.araujo
@@ -19,6 +29,8 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 	
 	@PersistenceContext
 	private EntityManager entityManager;
+	
+	@Autowired private ObjectMapper mapper;
 	
 	public SimpleEntityRecoveryImpl(){}
 	
@@ -35,7 +47,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 		StringBuilder sql = buildQuery(clazz, specification);
 		List<T> result = new ArrayList<T>();
 		TypedQuery<List> query = entityManager.createQuery(sql.toString(), List.class);
-		applySelectionValues(query, specification.getSelection());
+		applySelectionValues(clazz, query, specification.getSelection());
 		applyPagination(specification, query);
 		query.getResultList().forEach(resultItem -> {
 			result.add((T) transformer.transformTuple(resultItem.toArray(), specification.getProjection()));
@@ -43,23 +55,49 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 		return result;
 	}
 	
-	private void applySelectionValues(TypedQuery<?> query, List<Selection> selections) {
+	private void applySelectionValues(Class<?> clazz, TypedQuery<?> query, List<Selection> selections) {
 		int i = 1;
 		for(Selection selection : selections){
-			Object value = selection.isArrayValue() ? Arrays.asList((Object[])selection.getValue()) : selection.getValue();
-			query.setParameter("param" + i, value instanceof Integer ? Long.valueOf((Integer)value) : value);
+			Object value = selection.isArrayValue() ? Arrays.asList((Object[])selection.getValue()) : convertValue(clazz, selection);
+			query.setParameter("param" + i, value);
 			i++;
 		}
 	}
 
-	/*public <T> Page<T> findPage(Class<T> clazz, Specification specification){
+	private Object convertValue(Class<?> clazz, Selection selection) {
+		Object value = selection.getValue();
+		Field attrField = getAttributeFieldBasedOnDotNotation(clazz, selection.getField());
+		Class<?> attrClass = attrField.getType();
+		if(value == null || attrClass == value.getClass()) {
+			return value;
+		}
+		if(attrClass.isAssignableFrom(Long.class)) {
+			return new Long((Integer)value);
+		}
+		if(attrClass.isAssignableFrom(Integer.class)) {
+			return (Integer)((Long)value).intValue();
+		}
+		
+		if(attrClass.isAssignableFrom(List.class) && value instanceof Map){
+			attrClass = (Class<?>) ((ParameterizedType)attrField.getGenericType()).getActualTypeArguments()[0];
+			try {
+				return mapper.convertValue(value, attrClass);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return value;
+	}
+
+	public <T> Page<T> findPage(Class<T> clazz, Specification specification){
 		StringBuilder sql = new StringBuilder();
+		specification.setProjection(buildProjection(clazz, specification));
 		sql.append("SELECT COUNT(*) ");
 		applyFilters(clazz, specification, sql);
 		TypedQuery<Long> query = entityManager.createQuery(sql.toString(), Long.class);
-		applySelectionValues(query, specification.getSelection());
+		applySelectionValues(clazz, query, specification.getSelection());
 		return new Page<T>(find(clazz, specification), query.getSingleResult());
-	}*/
+	}
 	
 	@SuppressWarnings({ "rawtypes" })
 	private void applyPagination(Specification specification, TypedQuery<List> query) {
@@ -99,20 +137,25 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 	}
 
 	private List<String> buildFieldFullProjection(Class<?> clazz, Specification specification, String fieldName) {
-		try {
-			return projectionUtils.buildEntityProjection(getAttributeClassBasedOnDotNotation(clazz, fieldName), fieldName);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return projectionUtils.buildEntityProjection(getAttributeClassBasedOnDotNotation(clazz, fieldName), fieldName);
 	}
 
-	private Class<?> getAttributeClassBasedOnDotNotation(Class<?> clazz, String fieldName) throws NoSuchFieldException {
-		String[] hierarchyDotSplit = fieldName.split("\\.");
-		Class<?> fieldClass = clazz;
-		for(String classHierarchy : hierarchyDotSplit){
-			fieldClass = getDeclaredFieldWithDepth(fieldClass, classHierarchy).getType();
+	private Class<?> getAttributeClassBasedOnDotNotation(Class<?> clazz, String fieldName) {
+		return getAttributeFieldBasedOnDotNotation(clazz, fieldName).getType();
+	}
+	
+	private Field getAttributeFieldBasedOnDotNotation(Class<?> clazz, String fieldName) {
+		try {
+			String[] hierarchyDotSplit = fieldName.split("\\.");
+			Field fieldClass = null;
+			for(String classHierarchy : hierarchyDotSplit){
+				fieldClass = getDeclaredFieldWithDepth(fieldClass != null ? fieldClass.getType() : clazz, classHierarchy);
+			}
+			return fieldClass;
 		}
-		return fieldClass;
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private Field getDeclaredFieldWithDepth(Class<?> clazz, String field) throws NoSuchFieldException{
@@ -148,7 +191,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 		sql.append(" FROM ");
 		sql.append(clazz.getSimpleName()).append(" AS ").append(ROOT);
 		applyJoin(clazz, spec , sql);
-		applySelection(spec.getSelection(), sql);
+		applySelection(spec, sql);
 		applyAgregation(spec.getAgregations(), sql);
 	}
 
@@ -156,7 +199,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 		addJoinsBasedOnProjectionAndDefaultJoinAnnotation(clazz, spec);
 		List<Join> joins = spec.getJoins();
 		new HashSet<>(joins).forEach(join -> {
-			sql.append(" ").append(join.getType()).append(" ").append(ROOT).append(".").append(join.getEntity());
+			sql.append(String.format(" %s %s.%s %s", join.getType(), ROOT, join.getEntity(), join.getAlias()));
 		});
 	}
 
@@ -190,18 +233,27 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 		});
 	}
 
-	private void applySelection(List<Selection> selections, StringBuilder sql) {
+	private void applySelection(Specification spec, StringBuilder sql) {
+		List<Selection> selections = spec.getSelection();
 		if(!selections.isEmpty()){
 			sql.append(" WHERE ");
 			int i = 1;
 			for(Selection selection : selections){
 				if(i != 1){
-					sql.append(" " + selection.getCondition() + " ");
+					sql.append(String.format(" %s ", selection.getCondition()));
 				}
-				sql.append(ROOT.concat(".") + selection.buildSelectionWildcard(i));
+				sql.append(selection.buildSelectionWildcard(getRoot(spec, selection), i));
 				i++;
 			}
 		}
+	}
+
+	private String getRoot(Specification spec, Selection selection) {
+		Optional<Join> matchJoin = spec.getJoins().stream().filter(join -> join.getEntity().equals(selection.getField())).findFirst();
+		if(matchJoin.isPresent()) {
+			return matchJoin.get().getAlias();
+		}
+		return ROOT;
 	}
 
 	private void applyProjection(Class<?> clazz, StringBuilder sql, String... projection) {
@@ -209,7 +261,9 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 		Arrays.asList(projection).forEach(projectionItem -> { 
 			sql.append(ROOT.concat(".") + projectionItem + ", "); 
 		});
-		sql.replace(sql.length() - 2, sql.length(), "");
+		if(sql.toString().endsWith(", ")) {
+			sql.replace(sql.length() - 2, sql.length(), "");
+		}
 		sql.append(") ");
 	}
 }

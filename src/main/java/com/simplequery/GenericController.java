@@ -16,6 +16,11 @@ public class GenericController<T> {
 	public GenericController(GenericBusiness<T> business){
 		this.business = business;
 	}
+
+	@RequestMapping(value = "findPage", method = RequestMethod.POST)
+	public Page<T> getPage(@RequestBody Specification specification){
+		return business.findPage(specification);
+	}
 	
 	@RequestMapping(value = "find", method = RequestMethod.POST)
 	public List<T> get(@RequestBody Specification specification){

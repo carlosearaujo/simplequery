@@ -2,11 +2,12 @@ package com.simplequery;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**@author carlos.araujo
    @since  31 de out de 2017*/
-@Getter @Setter @AllArgsConstructor
+@Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class Join {
 	String entity;
 	String type;
@@ -34,5 +35,9 @@ public class Join {
 		} else if (!entity.equals(other.entity))
 			return false;
 		return true;
+	}
+
+	public String getAlias() {
+		return entity.replace("\\.", "");
 	}
 }

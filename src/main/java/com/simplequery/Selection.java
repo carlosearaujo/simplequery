@@ -21,9 +21,10 @@ public class Selection {
 	private String field;
 	private Object value;
 	private SelectionCondition condition = SelectionCondition.DEFAULT_SELECTION_TYPE;
-	private Operator operator = Operator.DEFAULT_OPERATOR_TYPE;
 	private Boolean nestedSelectionStart;
+	private Operator operator = Operator.DEFAULT_OPERATOR_TYPE;
 	private Boolean nestedSelectionEnd;
+	private String fieldFunction;
 	
 	public Selection(String key, Object value, SelectionCondition type, Operator operator) {
 		this.field = key;
@@ -44,14 +45,21 @@ public class Selection {
 		this(key, value, null, null);
 	}
 
-	public String buildSelectionWildcard(int position) {
+	public String buildSelectionWildcard(String root, int position) {
 		StringBuilder builder = new StringBuilder(nestedSelectionStart != null && nestedSelectionStart ? "(" : "");
-		builder.append(getField());
+		builder.append(applyFieldFunction(String.format("%s.%s", root, getField())));
 		boolean isArray = isArrayValue();
-		builder.append(isArray ? Operator.IN.getValue() : operator.getValue());
-		builder.append(isArray ? "(:param" + String.valueOf(position) + ")" : ":param" + String.valueOf(position) );
+		builder.append(operator.getValue());
+		builder.append(isArray ? String.format("(:param%d)", position) : String.format(":param%d", position));
 		builder.append(nestedSelectionEnd != null && nestedSelectionEnd ? ")" : "");
 		return builder.toString();
+	}
+
+	public String applyFieldFunction(String value) {
+		if(this.fieldFunction != null) {
+			return String.format("%s(%s)", fieldFunction, value);
+		}
+		return value;
 	}
 
 	public static Selection[] removeNullValues(Selection[] selections) {

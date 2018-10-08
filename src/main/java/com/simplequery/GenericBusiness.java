@@ -18,7 +18,7 @@ public class GenericBusiness<T> {
 	
 	@Autowired private SimpleEntityRecovery simpleEntityRecovery;
 	
-	public List<T> find(Specification specification, String ...agregation) {
+	public List<T> find(Specification specification) {
 		 return simpleEntityRecovery.find(getClassType(), specification);
 	}
 	
@@ -32,6 +32,10 @@ public class GenericBusiness<T> {
 	
 	public T findById(Long id, String ...projection){
 		return simpleEntityRecovery.findOne(id, getClassType(), projection);
+	}
+	
+	public Page<T> findPage(Specification specification) {
+		 return simpleEntityRecovery.findPage(getClassType(), specification);
 	}
 	
 	private Class<T> getClassType(){

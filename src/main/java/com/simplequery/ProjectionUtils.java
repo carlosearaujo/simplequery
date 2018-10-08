@@ -4,6 +4,9 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
+
+import org.springframework.util.ReflectionUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -19,7 +22,7 @@ public class ProjectionUtils {
 			prefix = "";
 		}
 		List<String> result = new ArrayList<>();
-		for(Field field : clazz.getDeclaredFields()){
+		for(Field field : getAllFields(clazz)){
 			if(!Modifier.isStatic(field.getModifiers()) && !field.isAnnotationPresent(Transient.class)){
 				if(!isMappedBy(field)){
 					String property = field.getName();
@@ -38,6 +41,14 @@ public class ProjectionUtils {
 		}
 		return result;
 	}
+	
+	public static List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<Field>();
+        for (Class<?> c = type; c != null; c = c.getSuperclass()) {
+            fields.addAll(Arrays.asList(c.getDeclaredFields()));
+        }
+        return fields;
+    }
 
 	private String getIdAttribute(Class<?> clazz) {
 		for(Field field : clazz.getDeclaredFields()){
