@@ -38,6 +38,12 @@ public class Join {
 	}
 
 	public String getAlias() {
-		return entity.replace("\\.", "");
+		String result = "";
+		for(String string : entity.split("\\.")) {
+			result += string.substring(0, 1).toUpperCase() + string.substring(1);
+		}
+		return result.substring(0, 1).toLowerCase() + result.substring(1);
 	}
+	
+	
 }

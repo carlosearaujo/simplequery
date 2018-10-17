@@ -3,8 +3,6 @@ package com.simplequery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.persistence.EntityManager;
@@ -12,12 +10,10 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.JoinType;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author carlos.araujo
@@ -67,8 +63,11 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 	private Object convertValue(Class<?> clazz, Selection selection) {
 		Object value = selection.getValue();
 		Field attrField = getAttributeFieldBasedOnDotNotation(clazz, selection.getField());
+		if(attrField == null) {
+			return value;
+		}
 		Class<?> attrClass = attrField.getType();
-		if(value == null || attrClass == value.getClass()) {
+		if((value == null || attrClass == value.getClass())) {
 			return value;
 		}
 		if(attrClass.isAssignableFrom(Long.class)) {
@@ -154,7 +153,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 			return fieldClass;
 		}
 		catch (Exception e) {
-			throw new RuntimeException(e);
+			return null;
 		}
 	}
 	
@@ -182,7 +181,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 
 	private <T> StringBuilder buildQuery(Class<T> clazz, Specification spec) {
 		StringBuilder sql = new StringBuilder();
-		applyProjection(clazz, sql, spec.getProjection());
+		applyProjection(clazz, sql, spec);
 		applyFilters(clazz, spec, sql);
 		return sql;
 	}
@@ -197,9 +196,10 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 
 	private void applyJoin(Class<?> clazz, Specification spec, StringBuilder sql) {
 		addJoinsBasedOnProjectionAndDefaultJoinAnnotation(clazz, spec);
-		List<Join> joins = spec.getJoins();
-		new HashSet<>(joins).forEach(join -> {
-			sql.append(String.format(" %s %s.%s %s", join.getType(), ROOT, join.getEntity(), join.getAlias()));
+		List<Join> joins = spec.getJoins().stream().distinct().collect(Collectors.toList());
+		joins.forEach(join -> {
+			Join root = getRoot(spec, join.getEntity());
+			sql.append(String.format(" %s %s.%s %s", join.getType(), root.getAlias(), join.getEntity().replaceFirst(root.entity + "\\.", ""), join.getAlias()));
 		});
 	}
 
@@ -208,16 +208,9 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 			if(!projection.endsWith(".id")){
 				String[] hierarchyDotSplit = projection.split("\\.");
 				try{
-					Class<?> fieldClass = clazz;
 					String currentJoinValue = "";
 					for(String classHierarchy : hierarchyDotSplit){
 						currentJoinValue += currentJoinValue.isEmpty() ? classHierarchy : ("." + classHierarchy);
-						Field field = getDeclaredFieldWithDepth(fieldClass, classHierarchy);
-						DefaultJoin defaultJoin = field.getAnnotation(DefaultJoin.class);
-						if(JoinType.LEFT.equals(Utils.safeEval(() -> defaultJoin.value()))){
-							spec.getJoins().add(new LeftJoin(currentJoinValue));
-						}
-						fieldClass = field.getType();
 					}
 				}
 				catch (Exception e) {
@@ -242,24 +235,34 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 				if(i != 1){
 					sql.append(String.format(" %s ", selection.getCondition()));
 				}
-				sql.append(selection.buildSelectionWildcard(getRoot(spec, selection), i));
+				sql.append(selection.buildSelectionWildcard(getRoot(spec, selection.getField()), i));
 				i++;
 			}
 		}
 	}
 
-	private String getRoot(Specification spec, Selection selection) {
-		Optional<Join> matchJoin = spec.getJoins().stream().filter(join -> join.getEntity().equals(selection.getField())).findFirst();
-		if(matchJoin.isPresent()) {
-			return matchJoin.get().getAlias();
+	private Join getRoot(Specification spec, String field) {
+		Join[] matchJoin = new Join[1];
+		if(field.contains(".")) {
+			String fieldMatcher = field.substring(0, field.lastIndexOf("."));
+			for(Join join : spec.getJoins()) {
+				if(fieldMatcher.equals(join.getEntity())) {
+					matchJoin[0] = join;
+				}
+			}
+			if(matchJoin[0] == null) {
+				return getRoot(spec, fieldMatcher);
+			}
 		}
-		return ROOT;
+		return matchJoin[0] != null ? matchJoin[0] : new Join(ROOT, null);
 	}
 
-	private void applyProjection(Class<?> clazz, StringBuilder sql, String... projection) {
+	private void applyProjection(Class<?> clazz, StringBuilder sql, Specification spec) {
+		String[] projection = spec.getProjection();
 		sql.append("SELECT new list(");
 		Arrays.asList(projection).forEach(projectionItem -> { 
-			sql.append(ROOT.concat(".") + projectionItem + ", "); 
+			Join root = getRoot(spec, projectionItem);
+			sql.append(String.format("%s.%s, ", root.getAlias(), projectionItem.replaceFirst(root.entity + "\\.", "")));
 		});
 		if(sql.toString().endsWith(", ")) {
 			sql.replace(sql.length() - 2, sql.length(), "");

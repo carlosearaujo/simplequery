@@ -45,9 +45,9 @@ public class Selection {
 		this(key, value, null, null);
 	}
 
-	public String buildSelectionWildcard(String root, int position) {
+	public String buildSelectionWildcard(Join root, int position) {
 		StringBuilder builder = new StringBuilder(nestedSelectionStart != null && nestedSelectionStart ? "(" : "");
-		builder.append(applyFieldFunction(String.format("%s.%s", root, getField())));
+		builder.append(applyFieldFunction(String.format("%s.%s", root.getAlias(), getField().replaceFirst(root.entity + "\\.", ""))));
 		boolean isArray = isArrayValue();
 		builder.append(operator.getValue());
 		builder.append(isArray ? String.format("(:param%d)", position) : String.format(":param%d", position));
