@@ -1,6 +1,8 @@
 package com.simplequery;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,10 +34,20 @@ public class GenericController<T> {
 		return business.findById(id);
 	}
 	
-	@RequestMapping(value = "findOne/{id}", method = RequestMethod.POST)
+	@PostMapping(value = "findOne/{id}")
 	public T get(@PathVariable Long id, @RequestBody Specification specification){
 		specification.getSelection().add(new Selection("id", id));
 		return business.findOne(specification);
+	}
+	
+	@DeleteMapping(value = "/{entityIds}")
+	public void delete(@PathVariable Long[] entityIds){
+		business.delete(entityIds);
+	}
+	
+	@PostMapping
+	public T save(@RequestBody T entity) {
+		return business.save(entity);
 	}
 	
 }
