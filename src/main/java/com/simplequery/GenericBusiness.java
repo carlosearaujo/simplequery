@@ -19,7 +19,7 @@ public abstract class GenericBusiness<T> {
 	
 	@SuppressWarnings("unchecked")
 	public GenericBusiness(	) {
-		this.persistentClass = (Class<T>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+		this.persistentClass = Utils.getGenericType(getClass());
 	}
 	
 	public void setPersistenceUnit(String PU) {

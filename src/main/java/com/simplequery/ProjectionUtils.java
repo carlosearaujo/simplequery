@@ -1,11 +1,10 @@
 package com.simplequery;
 
+import javax.persistence.Embedded;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
-
-import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -24,24 +23,32 @@ public class ProjectionUtils {
 		List<String> result = new ArrayList<>();
 		for(Field field : getAllFields(clazz)){
 			if(!Modifier.isStatic(field.getModifiers()) && !field.isAnnotationPresent(Transient.class)){
-				if(!isMappedBy(field)){
-					String property = field.getName();
-					String sufix = "";
-					if(isObject(field)){
-						sufix = getIdAttribute(field.getType());
-						if(sufix == null){
-							continue;
-						}
-						sufix = "." + sufix;
-					}
-					property = prefix.isEmpty() ? property.concat(sufix) : prefix.concat(".").concat(property.concat(sufix));
-					result.add(property);
-				}
+				result.addAll(addFieldProjection(field, prefix));
 			}
 		}
 		return result;
 	}
 	
+	private List<String> addFieldProjection(Field field, String prefix) {
+		List<String> result = new ArrayList<>();
+		String formattedPrefix = (prefix.isEmpty() ? prefix : prefix.concat(".")) + field.getName();
+		if(field.isAnnotationPresent(Embedded.class)) {
+			return buildEntityProjection(field.getType(), formattedPrefix);
+		}
+		else {
+			String sufix = getSufix(field);
+			if(sufix != null){
+				result.add(formattedPrefix.concat(sufix));
+			}
+		}
+		return result;
+	}
+
+	private String getSufix(Field field) {
+		String sufix = isObject(field) ? getIdAttribute(field.getType()) : "";
+		return sufix == null ? null : sufix.isEmpty() ? sufix : "." + sufix;
+	}
+
 	public static List<Field> getAllFields(Class<?> type) {
         List<Field> fields = new ArrayList<Field>();
         for (Class<?> c = type; c != null; c = c.getSuperclass()) {
@@ -59,7 +66,7 @@ public class ProjectionUtils {
 		return null;
 	}
 
-	//TODO Checar se isso é realmente necessário após a troca para JPQL
+	//TODO Checar se isso � realmente necessário após a troca para JPQL
 	private boolean isMappedBy(Field field) {
 		OneToMany oneToMany = field.getAnnotation(OneToMany.class);
 		if(oneToMany != null){
@@ -73,7 +80,7 @@ public class ProjectionUtils {
 	}
 
 	private boolean isObject(Field field) {
-		return !(isPrimitive(field.getType()) || field.getType().isPrimitive());
+		return !(isPrimitive(field.getType()) || field.getType().isPrimitive()) && !field.getType().isEnum();
 	}
 	
 	private static Set<Class<?>> getPrimitiveTypes(){

@@ -1,4 +1,5 @@
 package com.simplequery;
+import java.lang.reflect.ParameterizedType;
 import java.util.function.Supplier;
 
 /**
@@ -14,4 +15,8 @@ public class Utils {
             return null;
         }
     }
+
+	public static <T> Class<T> getGenericType(Class<?> clazz) {
+		return (Class<T>)((ParameterizedType)clazz.getGenericSuperclass()).getActualTypeArguments()[0];
+	}
 }
