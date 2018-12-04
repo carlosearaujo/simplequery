@@ -53,7 +53,7 @@ public abstract class GenericBusiness<T> {
 		return persistentClass;
 	}
 
-	public void delete(Long[] entityIds) {
+	public <ID> void delete(ID[] entityIds) {
 		this.simpleEntityRecovery.delete(persistentClass, entityIds);
 	}
 	

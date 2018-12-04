@@ -12,6 +12,6 @@ public interface SimpleEntityRecovery {
 	<T> List<T> find(Class<T> classType, Specification specification);
 	<T> Page<T> findPage(Class<T> classType, Specification specification);
 	<T, ID> T findOne(ID id, Class<T> classType, String... projection);
-	<T> void delete(Class<T> clazz, Long[] entityIds);
+	<T, ID> void delete(Class<T> clazz, ID[] entityIds);
 	void setPersistenceUnit(String PU);
 }

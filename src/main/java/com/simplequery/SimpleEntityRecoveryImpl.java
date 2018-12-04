@@ -291,7 +291,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 
 	@Override
 	@Transactional
-	public <T> void delete(Class<T> clazz, Long[] entityIds) {
+	public <T, ID> void delete(Class<T> clazz, ID[] entityIds) {
 		entityManager.createQuery("DELETE FROM " + clazz.getSimpleName() + " r where r.id IN (:ids)").setParameter("ids", Arrays.asList(entityIds)).executeUpdate();
 	}
 }
