@@ -50,4 +50,9 @@ public class GenericController<T> {
 		return business.save(entity);
 	}
 	
+	@PostMapping(value = "saveAll")
+	public List<T> saveAll(@RequestBody List<T> entityList) {
+		return business.save(entityList);
+	}
+	
 }

@@ -69,7 +69,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 	private void applySelectionValues(Class<?> clazz, TypedQuery<?> query, List<Selection> selections) {
 		int i = 1;
 		for(Selection selection : selections){
-			Object value = selection.isArrayValue() ? Arrays.asList((Object[])selection.getValue()) : convertValue(clazz, selection);
+			Object value = selection.isArrayValue() ? selection.getValue() : convertValue(clazz, selection);
 			query.setParameter("param" + i, value);
 			i++;
 		}

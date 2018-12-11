@@ -68,7 +68,7 @@ public class Selection {
 	
 	public boolean isArrayValue(){
 		Object value = getValue();
-		return value != null && getValue().getClass().isArray();
+		return value != null && (value.getClass().isArray() || value instanceof List);
 	}
 
 	public static <T> Collection<? extends Selection> buildBasedOnFieldsNotNull(T object, String prefix) {

@@ -3,8 +3,6 @@ package com.simplequery;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Getter;
-
-import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -17,7 +15,6 @@ public abstract class GenericBusiness<T> {
 	private Class<T> persistentClass;
 	private String persistenceUnitName;
 	
-	@SuppressWarnings("unchecked")
 	public GenericBusiness(	) {
 		this.persistentClass = Utils.getGenericType(getClass());
 	}
@@ -70,5 +67,9 @@ public abstract class GenericBusiness<T> {
 		if(getPersistenceUnit() != null) {
 			setPersistenceUnit(getPersistenceUnit());
 		}
+	}
+
+	public List<T> save(List<T> entity) {
+		throw new UnsupportedOperationException("Not supported yet");
 	}
 }
