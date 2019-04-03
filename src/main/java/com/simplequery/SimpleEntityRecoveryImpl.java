@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -111,7 +112,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 		StringBuilder sql = new StringBuilder();
 		specification.setProjection(buildProjection(clazz, specification));
 		sql.append("SELECT COUNT(*) ");
-		applyFilters(clazz, specification, sql);
+		applyFilters(clazz, specification, sql, false);
 		TypedQuery<Long> query = entityManager.createQuery(sql.toString(), Long.class);
 		applySelectionValues(clazz, query, specification.getSelection());
 		return new Page<T>(find(clazz, specification), query.getSingleResult());
@@ -201,16 +202,18 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 	private <T> StringBuilder buildQuery(Class<T> clazz, Specification spec) {
 		StringBuilder sql = new StringBuilder();
 		applyProjection(clazz, sql, spec);
-		applyFilters(clazz, spec, sql);
+		applyFilters(clazz, spec, sql, true);
 		return sql;
 	}
 
-	private <T> void applyFilters(Class<T> clazz, Specification spec, StringBuilder sql) {
+	private <T> void applyFilters(Class<T> clazz, Specification spec, StringBuilder sql, boolean applyAgregation) {
 		sql.append(" FROM ");
 		sql.append(clazz.getSimpleName()).append(" AS ").append(ROOT);
 		applyJoin(clazz, spec , sql);
 		applySelection(spec, sql);
-		applyAgregation(spec.getAgregations(), sql);
+		if(applyAgregation) {
+			applyAgregation(spec.getAgregations(), sql);
+		}
 	}
 
 	private void applyJoin(Class<?> clazz, Specification spec, StringBuilder sql) {
