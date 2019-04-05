@@ -54,7 +54,7 @@ public abstract class GenericBusiness<T> {
 		this.simpleEntityRecovery.delete(persistentClass, entityIds);
 	}
 	
-	public T save(T entity) {
+	public T q(T entity) {
 		throw new UnsupportedOperationException("Not supported yet");
 	}
 	
@@ -70,6 +70,10 @@ public abstract class GenericBusiness<T> {
 	}
 
 	public List<T> save(List<T> entity) {
+		throw new UnsupportedOperationException("Not supported yet");
+	}
+	
+	public T save(T entity) {
 		throw new UnsupportedOperationException("Not supported yet");
 	}
 }

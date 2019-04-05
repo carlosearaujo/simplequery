@@ -11,11 +11,11 @@ import java.util.List;
 
 /**@author carlos.araujo
    @since  26 de set de 2017*/
-public class GenericController<T> {
+public class GenericController<T, E extends GenericBusiness<T>> {
 	
-	private GenericBusiness<T> business;
+	protected E business;
 	
-	public GenericController(GenericBusiness<T> business){
+	public GenericController(E business){
 		this.business = business;
 	}
 
