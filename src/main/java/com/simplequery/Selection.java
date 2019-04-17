@@ -49,8 +49,8 @@ public class Selection {
 		StringBuilder builder = new StringBuilder(nestedSelectionStart != null && nestedSelectionStart ? "(" : "");
 		builder.append(applyFieldFunction(String.format("%s.%s", root.getAlias(), getField().replaceFirst(root.entity + "\\.", ""))));
 		boolean isArray = isArrayValue();
-		builder.append(operator.getValue());
-		builder.append(isArray ? String.format("(:param%d)", position) : String.format(":param%d", position));
+		String paramPosition = isArray ? String.format("(:param%d)", position) : String.format(":param%d", position);
+		builder.append(operator.applyParam(this.value, paramPosition));
 		builder.append(nestedSelectionEnd != null && nestedSelectionEnd ? ")" : "");
 		return builder.toString();
 	}
