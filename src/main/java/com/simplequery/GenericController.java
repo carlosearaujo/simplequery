@@ -41,7 +41,7 @@ public class GenericController<T, E extends GenericBusiness<T>> {
 	}
 	
 	@DeleteMapping(value = "/{entityIds}")
-	public void delete(@PathVariable Long[] entityIds){
+	public void delete(@PathVariable Integer[] entityIds){
 		business.delete(entityIds);
 	}
 	
