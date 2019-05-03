@@ -19,7 +19,7 @@ public class Specification {
 	private List<Join> joins;
 	private List<Agregation> agregation;
 	
-	private Integer pageNumber; public Integer getPageNumber(){ return pageNumber; }
+	private Integer pageIndex; public Integer getPageNumber(){ return pageIndex; }
 	private Integer pageSize; public Integer getPageSize(){ return pageSize; }
 	
 	public Specification(List<Selection> selections, String ...projection){
@@ -88,7 +88,7 @@ public class Specification {
 
 	public Specification(List<Selection> selections, Integer pageNumber, Integer pageSize, String ...projection) {
 		this(selections, projection);
-		this.pageNumber = pageNumber;
+		this.pageIndex = pageNumber;
 		this.pageSize = pageSize;
 	}
 	

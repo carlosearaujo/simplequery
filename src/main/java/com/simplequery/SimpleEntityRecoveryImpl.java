@@ -121,7 +121,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 		applyFilters(clazz, specification, sql, false);
 		TypedQuery<Long> query = entityManager.createQuery(sql.toString(), Long.class);
 		applySelectionValues(clazz, query, specification.getSelection());
-		return new Page<T>(find(clazz, specification), query.getSingleResult());
+		return new Page<T>(find(clazz, specification), query.getSingleResult(), specification.getPageNumber(), specification.getPageSize());
 	}
 	
 	@SuppressWarnings({ "rawtypes" })
