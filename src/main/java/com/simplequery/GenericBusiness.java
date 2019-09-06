@@ -54,10 +54,6 @@ public abstract class GenericBusiness<T> {
 		this.simpleEntityRecovery.delete(persistentClass, entityIds);
 	}
 	
-	public T q(T entity) {
-		throw new UnsupportedOperationException("Not supported yet");
-	}
-	
 	public String getPersistenceUnit() {
 		return null;
 	}
