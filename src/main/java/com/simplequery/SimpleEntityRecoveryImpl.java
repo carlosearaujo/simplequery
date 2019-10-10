@@ -214,7 +214,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
 
 	private <T> void applyFilters(Class<T> clazz, Specification spec, StringBuilder sql, boolean applyAgregation) {
 		sql.append(" FROM ");
-		sql.append(clazz.getSimpleName()).append(" AS ").append(ROOT);
+		sql.append(clazz.getName()).append(" AS ").append(ROOT);
 		applyJoin(clazz, spec , sql);
 		applySelection(spec, sql);
 		if(applyAgregation) {
