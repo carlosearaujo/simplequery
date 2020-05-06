@@ -4,6 +4,7 @@ import static java.lang.String.format;
 
 import java.io.PrintWriter;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -23,18 +24,18 @@ public class ServiceGeneratorProcessor extends AbstractProcessor {
 		Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(GenerateService.class);
 		String servicePackage = getServicePackage(roundEnv);
 		annotatedElements.forEach(annotatedElement -> {
+			GenerateService annotation = annotatedElement.getAnnotation(GenerateService.class);
 			String targetSimpleName = annotatedElement.getSimpleName().toString();
 			String serviceName = format("%sService", targetSimpleName);
 			String fileName = format("%s%s", servicePackage == null ? "" : servicePackage + ".", serviceName);
-			buildFile(servicePackage, fileName, annotatedElement, serviceName, getBusinessClass(annotatedElement), targetSimpleName);
+			buildFile(servicePackage, fileName, annotatedElement, serviceName, getBusinessClass(annotation), targetSimpleName, annotation.applyStereotype());
 		});
 		
 		return true;
 	}
 	
-	private String getBusinessClass(Element annotatedElement) {
+	private String getBusinessClass(GenerateService annotation) {
 		try{
-			GenerateService annotation = annotatedElement.getAnnotation(GenerateService.class);
 			return annotation.customBusiness().getCanonicalName();
 	    }
 	    catch( MirroredTypeException mte ){
@@ -44,7 +45,8 @@ public class ServiceGeneratorProcessor extends AbstractProcessor {
 	    }
 	}
 
-	private void buildFile(String servicePack, String fileName, Element annotatedElement, String serviceName, String genericBusiness, String targetName) {
+	private void buildFile(String servicePack, String fileName, Element annotatedElement, String serviceName, 
+						   String genericBusiness, String targetName, boolean applyStereotype) {
 		try {
 			JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(fileName);
 			PrintWriter out = new PrintWriter(builderFile.openWriter());
@@ -55,7 +57,7 @@ public class ServiceGeneratorProcessor extends AbstractProcessor {
 			out.println("import org.springframework.stereotype.Service;");
 			out.println(format("import %s;", ((TypeElement)annotatedElement).getQualifiedName().toString()));
 			out.println();
-			out.println("@Service");
+			out.println(applyStereotype ? "@Service" : "");
 			out.println(format("public class %s extends %s<%s> {}", serviceName, genericBusiness, targetName));
 			out.flush();
 			out.close();
