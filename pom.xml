@@ -6,6 +6,9 @@
     
     <properties>
 		<distribution.url>https://mymavenrepo.com/repo/6tfgPWh0Ku6A8IwypwfK/</distribution.url>
+		<lombok.version>1.18.12</lombok.version>
+		<spring.version>5.2.4.RELEASE</spring.version>
+		<hibernate.version>5.4.12.Final</hibernate.version>
 	</properties>
 
     <groupId>com.simplequery</groupId>
@@ -28,28 +31,23 @@
 			<id>central</id>
     		<name>Maven Repository Switchboard</name>
    			<layout>default</layout>
-      		<url>http://repo1.maven.org/maven2</url>
+      		<url>https://repo1.maven.org/maven2</url>
 	    </repository>
  	</repositories>
 
     <dependencies>
-        <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.0-api</artifactId>
-            <version>1.0.1.Final</version>
-        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.16</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>5.0.12.Final</version>
+            <version>${hibernate.version}</version>
         </dependency>
         
         <dependency>
@@ -67,19 +65,25 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>5.0.1.RELEASE</version>
+            <version>${spring.version}</version>
         </dependency>
         
         <dependency>
     		<groupId>org.springframework</groupId>
     		<artifactId>spring-web</artifactId>
-    		<version>5.0.1.RELEASE</version>
+    		<version>${spring.version}</version>
 		</dependency>
 		
 		<dependency>
 	    	<groupId>org.springframework</groupId>
 	    	<artifactId>spring-tx</artifactId>
-	    	<version>5.0.5.RELEASE</version>
+	    	<version>${spring.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>javax.annotation</groupId>
+		  <artifactId>javax.annotation-api</artifactId>
+		  <version>1.3.2</version>
 		</dependency>
     </dependencies>
 
@@ -94,24 +98,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <!-- <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.1</version>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> this is used for inheritance merges
-                        <phase>package</phase> append to the packaging phase.
-                        <goals>
-                            <goal>attached</goal> goals == mojos
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin> -->
         </plugins>
     </build>
 

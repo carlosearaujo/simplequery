@@ -8,6 +8,8 @@ import javax.persistence.Transient;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class ProjectionUtils {
@@ -66,7 +68,7 @@ public class ProjectionUtils {
 		return null;
 	}
 
-	//TODO Checar se isso � realmente necessário após a troca para JPQL
+	//TODO Checar se isso � realmente necessário após a troca para JPQL
 	private boolean isMappedBy(Field field) {
 		OneToMany oneToMany = field.getAnnotation(OneToMany.class);
 		if(oneToMany != null){
@@ -95,6 +97,8 @@ public class ProjectionUtils {
         ret.add(Double.class);
         ret.add(Void.class);
         ret.add(Date.class);
+        ret.add(LocalDate.class);
+        ret.add(LocalDateTime.class);
         ret.add(String.class);
         return ret;
     }
