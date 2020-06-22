@@ -15,8 +15,10 @@ public abstract class GenericBusiness<T> {
 	private Class<T> persistentClass;
 	private String persistenceUnitName;
 	
-	public GenericBusiness(	) {
-		this.persistentClass = Utils.getGenericType(getClass());
+	public GenericBusiness() {
+		if(this.getPersistentClass() == null) {
+			this.persistentClass = Utils.getGenericType(getClass());
+		}
 	}
 	
 	public void setPersistenceUnit(String PU) {
@@ -27,11 +29,11 @@ public abstract class GenericBusiness<T> {
 	@Autowired private SimpleEntityRecovery simpleEntityRecovery;
 	
 	public List<T> find(Specification specification) {
-		 return simpleEntityRecovery.find(getClassType(), specification);
+		 return simpleEntityRecovery.find(getPersistentClass(), specification);
 	}
 	
 	public T findOne(Specification specification){
-		List<T> result = simpleEntityRecovery.find(getClassType(), specification);
+		List<T> result = simpleEntityRecovery.find(getPersistentClass(), specification);
 		if(result != null && !result.isEmpty()){
 			return result.get(0);
 		}
@@ -39,15 +41,11 @@ public abstract class GenericBusiness<T> {
 	}
 	
 	public T findById(Long id, String ...projection){
-		return simpleEntityRecovery.findOne(id, getClassType(), projection);
+		return simpleEntityRecovery.findOne(id, getPersistentClass(), projection);
 	}
 	
 	public Page<T> findPage(Specification specification) {
-		 return simpleEntityRecovery.findPage(getClassType(), specification);
-	}
-	
-	private Class<T> getClassType(){
-		return persistentClass;
+		 return simpleEntityRecovery.findPage(getPersistentClass(), specification);
 	}
 
 	public <ID> void delete(ID[] entityIds) {
@@ -55,7 +53,7 @@ public abstract class GenericBusiness<T> {
 	}
 	
 	public String getPersistenceUnit() {
-		return null;
+		return "entityManagerFactory";
 	}
 	
 	@PostConstruct

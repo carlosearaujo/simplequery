@@ -4,7 +4,6 @@ import static java.lang.String.format;
 
 import java.io.PrintWriter;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -58,12 +57,19 @@ public class ServiceGeneratorProcessor extends AbstractProcessor {
 			out.println(format("import %s;", ((TypeElement)annotatedElement).getQualifiedName().toString()));
 			out.println();
 			out.println(applyStereotype ? "@Service" : "");
-			out.println(format("public class %s extends %s<%s> {}", serviceName, genericBusiness, targetName));
+			out.println(format("public class %s extends %s<%s> {", serviceName, genericBusiness, targetName));
+			generateTargetMethod(targetName, out);
+			out.println("}");
 			out.flush();
 			out.close();
 		}catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private void generateTargetMethod(String targetName, PrintWriter out) {
+		out.println("\t@Override");
+		out.println(format("\tpublic Class<%s> getPersistentClass(){ return %s.class; }", targetName, targetName));
 	}
 
 	private String getServicePackage(RoundEnvironment roundEnv) {
