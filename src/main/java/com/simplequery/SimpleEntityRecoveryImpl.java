@@ -1,5 +1,6 @@
 package com.simplequery;
 
+import static java.lang.Enum.valueOf;
 import static java.lang.Long.valueOf;
 
 import java.lang.reflect.Field;
@@ -95,13 +96,12 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
     if (attrField == null) {
       return value;
     }
-    /*Object converterResult = convertWithConverter(value, attrField);
-    if (converterResult != null) {
-      return converterResult;
-    }*/
     Class<?> attrClass = attrField.getType();
     if ((value == null || attrClass == value.getClass())) {
       return value;
+    }
+    if(attrClass.isEnum()) {
+    	return valueOf((Class)attrClass, (String)value);
     }
     if (attrClass.isAssignableFrom(Long.class)) {
       return valueOf(((Integer) value).longValue());
@@ -119,20 +119,6 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
       }
     }
     return value;
-  }
-
-  private Object convertWithConverter(Object value, Field attrField) {
-    Convert convert = attrField.getAnnotation(Convert.class);
-    if (convert != null) {
-      try {
-        AttributeConverter<Object, Object> converter = (AttributeConverter<Object, Object>) convert.converter().newInstance();
-        return converter.convertToDatabaseColumn(value);
-      } catch (InstantiationException | IllegalAccessException e) {
-        e.printStackTrace();
-        return null;
-      }
-    }
-    return null;
   }
 
   private Class<?> getListType(Field attrField) {
