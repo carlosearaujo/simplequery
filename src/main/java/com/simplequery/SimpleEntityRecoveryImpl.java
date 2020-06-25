@@ -1,5 +1,7 @@
 package com.simplequery;
 
+import static java.lang.Long.valueOf;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -102,7 +104,7 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
       return value;
     }
     if (attrClass.isAssignableFrom(Long.class)) {
-      return new Long((Integer) value);
+      return valueOf(((Integer) value).longValue());
     }
     if (attrClass.isAssignableFrom(Integer.class)) {
       return (Integer) ((Long) value).intValue();
