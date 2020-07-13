@@ -40,7 +40,7 @@ public abstract class GenericBusiness<T> {
 		return null;
 	}
 	
-	public T findById(Long id, String ...projection){
+	public <E> T findById(E id, String ...projection){
 		return simpleEntityRecovery.findOne(id, getPersistentClass(), projection);
 	}
 	

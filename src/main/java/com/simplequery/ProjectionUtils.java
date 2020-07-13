@@ -8,6 +8,7 @@ import javax.persistence.Transient;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -100,6 +101,7 @@ public class ProjectionUtils {
         ret.add(LocalDate.class);
         ret.add(LocalDateTime.class);
         ret.add(String.class);
+        ret.add(BigInteger.class);
         return ret;
     }
 	
