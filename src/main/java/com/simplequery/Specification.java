@@ -96,7 +96,7 @@ public class Specification {
 	public void setLeftProjection(String[] leftProjections){
 		List<Join> joins = new ArrayList<>();
 		for(String leftProjection : leftProjections){
-			String leftTarget = leftProjection.substring(0, leftProjection.lastIndexOf("."));
+			String leftTarget = leftProjection.lastIndexOf(".") != -1 ? leftProjection.substring(0, leftProjection.lastIndexOf(".")) : leftProjection;
 			joins.add(new LeftJoin(leftTarget));
 		}
 		addJoins(joins);
