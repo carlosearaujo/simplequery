@@ -11,7 +11,7 @@ import java.util.List;
 
 /**@author carlos.araujo
    @since  26 de set de 2017*/
-public class GenericController<T, E extends GenericBusiness<T>> {
+public class GenericController<T, E extends IGenericBusiness<T>> {
 	
 	protected E business;
 	
