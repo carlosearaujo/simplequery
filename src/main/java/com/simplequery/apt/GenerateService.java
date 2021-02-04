@@ -7,5 +7,6 @@ import java.lang.annotation.Target;
 public @interface GenerateService {
 	@SuppressWarnings("rawtypes")
 	Class<? extends com.simplequery.GenericBusiness> customBusiness() default com.simplequery.GenericBusiness.class;
+	String[] targetsQualifiedNames() default {};
 	boolean applyStereotype() default true;
 }

@@ -1,8 +1,10 @@
 package com.simplequery.apt;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -24,10 +26,21 @@ public class ServiceGeneratorProcessor extends AbstractProcessor {
 		String servicePackage = getServicePackage(roundEnv);
 		annotatedElements.forEach(annotatedElement -> {
 			GenerateService annotation = annotatedElement.getAnnotation(GenerateService.class);
-			String targetSimpleName = annotatedElement.getSimpleName().toString();
-			String serviceName = format("%sService", targetSimpleName);
-			String fileName = format("%s%s", servicePackage == null ? "" : servicePackage + ".", serviceName);
-			buildFile(servicePackage, fileName, annotatedElement, serviceName, getBusinessClass(annotation), targetSimpleName, annotation.applyStereotype());
+			if(annotation.targetsQualifiedNames().length == 0) {
+				String targetSimpleName = annotatedElement.getSimpleName().toString();
+				String serviceName = format("%sService", targetSimpleName);
+				String fileName = format("%s%s", servicePackage == null ? "" : servicePackage + ".", serviceName);
+				buildFile(servicePackage, fileName, ((TypeElement)annotatedElement).getQualifiedName().toString(), 
+						  serviceName, getBusinessClass(annotation), targetSimpleName, annotation.applyStereotype());
+				}
+			else {
+				asList(annotation.targetsQualifiedNames()).forEach(target -> {
+					String targetSimpleName = target.split("\\.")[target.split("\\.").length - 1];
+					String serviceName = format("%sService", targetSimpleName);
+					String fileName = format("%s%s", servicePackage == null ? "" : servicePackage + ".", serviceName);
+					buildFile(servicePackage, fileName, target, serviceName, getBusinessClass(annotation), targetSimpleName, annotation.applyStereotype());
+				});
+			}
 		});
 		
 		return true;
@@ -44,7 +57,7 @@ public class ServiceGeneratorProcessor extends AbstractProcessor {
 	    }
 	}
 
-	private void buildFile(String servicePack, String fileName, Element annotatedElement, String serviceName, 
+	private void buildFile(String servicePack, String fileName, String qualifiedTargetName, String serviceName, 
 						   String genericBusiness, String targetName, boolean applyStereotype) {
 		try {
 			JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(fileName);
@@ -54,7 +67,7 @@ public class ServiceGeneratorProcessor extends AbstractProcessor {
 				out.println();
 			}
 			out.println("import org.springframework.stereotype.Service;");
-			out.println(format("import %s;", ((TypeElement)annotatedElement).getQualifiedName().toString()));
+			out.println(format("import %s;", qualifiedTargetName));
 			out.println();
 			out.println(applyStereotype ? "@Service" : "");
 			out.println(format("public class %s extends %s<%s> {", serviceName, genericBusiness, targetName));
