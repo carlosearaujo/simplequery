@@ -5,7 +5,7 @@ import java.util.List;
 public interface IGenericBusiness<T> {
   public List<T> find(Specification specification);
   public T findOne(Specification specification);
-  public T findById(Long id, String ...projection);
+  public <E> T findById(E id, String ...projection);
   public Page<T> findPage(Specification specification);
   public <ID> void delete(ID[] entityIds);
   public String getPersistenceUnit();

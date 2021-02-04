@@ -67,10 +67,11 @@ public class ServiceGeneratorProcessor extends AbstractProcessor {
 				out.println();
 			}
 			out.println("import org.springframework.stereotype.Service;");
+			out.println("import com.simplequery.IGenericBusiness;");
 			out.println(format("import %s;", qualifiedTargetName));
 			out.println();
 			out.println(applyStereotype ? "@Service" : "");
-			out.println(format("public class %s extends %s<%s> {", serviceName, genericBusiness, targetName));
+			out.println(format("public class %s extends %s<%s> implements IGenericBusiness<%s> {", serviceName, genericBusiness, targetName, targetName));
 			generateTargetMethod(targetName, out);
 			out.println("}");
 			out.flush();
