@@ -95,6 +95,9 @@ public class SimpleEntityRecoveryImpl implements SimpleEntityRecovery {
       return value;
     }
     Class<?> attrClass = attrField.getType();
+    if(attrClass.isEnum()) {
+      return Enum.valueOf((Class<Enum>)attrClass, valueOf(value));
+    }
     if ((value == null || attrClass == value.getClass())) {
       return value;
     }
