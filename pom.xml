@@ -8,7 +8,7 @@
 		<distribution.url>https://mymavenrepo.com/repo/6tfgPWh0Ku6A8IwypwfK/</distribution.url>
 		<lombok.version>1.18.12</lombok.version>
 		<spring.version>5.2.4.RELEASE</spring.version>
-		<hibernate.version>5.4.12.Final</hibernate.version>
+		<hibernate.version>5.4.24.Final</hibernate.version>
 	</properties>
 
     <groupId>com.simplequery</groupId>
