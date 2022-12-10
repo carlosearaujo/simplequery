@@ -7,7 +7,7 @@
     <properties>
 		<distribution.url>https://mymavenrepo.com/repo/6tfgPWh0Ku6A8IwypwfK/</distribution.url>
 		<lombok.version>1.18.12</lombok.version>
-		<spring.version>5.2.4.RELEASE</spring.version>
+		<spring.version>6.0.0</spring.version>
 		<hibernate.version>5.4.12.Final</hibernate.version>
 	</properties>
 
